@@ -1,7 +1,7 @@
 import * as React from "react";
 import {
     FlameIcon,
-    GalleryVerticalEnd,
+    // GalleryVerticalEnd,
     HomeIcon,
     Minus,
     Plus,
