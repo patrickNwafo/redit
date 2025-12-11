@@ -6,12 +6,12 @@ import {
     UserButton,
     // useUser,
 } from "@clerk/nextjs";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import ReddishLogo from "@/images/Reddish Full.png";
 import ReddisLogoOnly from "@/images/Reddish Logo Only.png";
 import Image from "next/image";
 import { MenuIcon, ChevronLeftIcon } from "lucide-react";
-import { useSidebar } from "./ui/sidebar";
+import { useSidebar } from "../ui/sidebar";
 function Header() {
     // const { user } = useUser();
     const { toggleSidebar, open, isMobile } = useSidebar();

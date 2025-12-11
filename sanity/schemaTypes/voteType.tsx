@@ -43,7 +43,7 @@ export const votedType = defineType({
             type: "reference",
             to: [{ type: "comment" }],
             description: "The comment this vote belongs to",
-            validation: (Rule) => Rule.required(),
+            // validation: (Rule) => Rule.required(),
         }),
         defineField({
             name: "createdAt",

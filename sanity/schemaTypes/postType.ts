@@ -6,6 +6,7 @@ export const postType = defineType({
     title: "Post",
     type: "document",
     icon: FileText,
+    description: "A post is a piece of content created by a user in a subreddit.",
     fields: [
         defineField({
             name: "title",
@@ -32,27 +33,39 @@ export const postType = defineType({
         defineField({
             name: "subreddit",
             title: "Subreddit",
-            type: "string",
+            type: "reference",
             description: "The subreddit this post belongs to",
+            to: [{ type: "subreddit" }],
             validation: (Rule) => Rule.required(),
         }),
         defineField({
             name: "body",
             title: "Body",
-            type: "text",
+            type: "array",
             description: "The main content of the post",
+            of: [{ type: "block" }],
         }),
+        // defineField({
+        //     name: "originalBody",
+        //     title: "Original Body",
+        //     type: "array",
+        //     description: "The original body before any edits",
+        //     hidden: true,
+        //     of: [{ type: "block" }],
+        // }),
         defineField({
             name: "image",
             title: "Image",
-            type: "url",
+            type: "image",
             description: "URL to the post image",
-        }),
-        defineField({
-            name: "alt",
-            title: "Alt Text",
-            type: "string",
-            description: "Alternative text for the image",
+            fields: [
+                {
+                    name: "alt",
+                    type: "string",
+                    title: "Alt Text",
+                    description: "Alternative text for the image",
+                },
+            ],
         }),
         defineField({
             name: "isReported",
@@ -67,6 +80,7 @@ export const postType = defineType({
             type: "datetime",
             description: "The date and time this post was published",
             initialValue: new Date().toISOString(),
+            validation: (Rule) => Rule.required(),
         }),
         defineField({
             name: "isDeleted",
