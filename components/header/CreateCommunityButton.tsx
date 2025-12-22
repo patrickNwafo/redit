@@ -81,53 +81,53 @@ function CreateCommunityButton() {
             }
         };
     };
-    const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSlug(e.target.value);
+    // const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setSlug(e.target.value);
 
-        if (!name.trim()) {
-            setErrorMessage("Community name cannot be empty");
-            return;
-        }
+    //     if (!name.trim()) {
+    //         setErrorMessage("Community name cannot be empty");
+    //         return;
+    //     }
 
-        setErrorMessage("");
+    //     setErrorMessage("");
 
-        startTransition(async () => {
-            try {
-                let imageBase64: string | null = null;
-                let fileName: string | null = null;
-                let fileType: string | null = null;
+    //     startTransition(async () => {
+    //         try {
+    //             let imageBase64: string | null = null;
+    //             let fileName: string | null = null;
+    //             let fileType: string | null = null;
 
-                if (imageFile) {
-                    const reader = new FileReader();
-                    imageBase64 = await new Promise<string>((resolve) => {
-                        reader.onload = () => resolve(reader.result as string);
-                        reader.readAsDataURL(imageFile);
-                    });
-                    fileName = imageFile.name;
-                    fileType = imageFile.type;
-                }
+    //             if (imageFile) {
+    //                 const reader = new FileReader();
+    //                 imageBase64 = await new Promise<string>((resolve) => {
+    //                     reader.onload = () => resolve(reader.result as string);
+    //                     reader.readAsDataURL(imageFile);
+    //                 });
+    //                 fileName = imageFile.name;
+    //                 fileType = imageFile.type;
+    //             }
 
-                const result = await CreateCommunity(
-                    name.trim(),
-                    imageBase64,
-                    fileName,
-                    fileType,
-                    slug.trim(),
-                    description.trim() || undefined
-                );
+    //             const result = await CreateCommunity(
+    //                 name.trim(),
+    //                 imageBase64,
+    //                 fileName,
+    //                 fileType,
+    //                 slug.trim(),
+    //                 description.trim() || undefined
+    //             );
 
-                if ("error" in result && result.error) {
-                    setErrorMessage(result.error);
-                } else if ("subreddit" in result && result.subreddit) {
-                    setOpen(false);
-                    resetForm();
-                }
-            } catch (err) {
-                console.error("Failed to create community", err);
-                setErrorMessage("Failed to create community");
-            }
-        });
-    };
+    //             if ("error" in result && result.error) {
+    //                 setErrorMessage(result.error);
+    //             } else if ("subreddit" in result && result.subreddit) {
+    //                 setOpen(false);
+    //                 resetForm();
+    //             }
+    //         } catch (err) {
+    //             console.error("Failed to create community", err);
+    //             setErrorMessage("Failed to create community");
+    //         }
+    //     });
+    // };
 
     const handleCreateCommunity = async (
         e: React.FormEvent<HTMLFormElement>
