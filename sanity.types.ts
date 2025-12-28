@@ -293,7 +293,7 @@ export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ./sanity/lib/post/getPosts.ts
 // Variable: getAllPostsQuery
-// Query: *[_type == "post" && isDeleted != false] {        _id,        title,         "slug": slug.current,        body,        publishedAt,        "author": author->,        "subreddit": subreddit->,         image,        isDeleted        } | order(publishedAt desc)
+// Query: *[_type == "post" && isDeleted == false] {        _id,        title,         "slug": slug.current,        body,        publishedAt,        "author": author->,        "subreddit": subreddit->,         image,        isDeleted        } | order(publishedAt desc)
 export type GetAllPostsQueryResult = Array<{
   _id: string;
   title: string | null;
@@ -447,7 +447,7 @@ export type GetExistingUserQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"post\" && isDeleted != false] {\n        _id,\n        title, \n        \"slug\": slug.current,\n        body,\n        publishedAt,\n        \"author\": author->,\n        \"subreddit\": subreddit->, \n        image,\n        isDeleted\n        } | order(publishedAt desc)": GetAllPostsQueryResult;
+    "*[_type == \"post\" && isDeleted == false] {\n        _id,\n        title, \n        \"slug\": slug.current,\n        body,\n        publishedAt,\n        \"author\": author->,\n        \"subreddit\": subreddit->, \n        image,\n        isDeleted\n        } | order(publishedAt desc)": GetAllPostsQueryResult;
     "\n            *[_type == \"subreddit\" && title == $name][0] {\n              _id\n            }\n           ": CheckExistingQueryResult;
     "\n                *[_type == \"subreddit\" && slug.current == $slug][0] {\n                  _id\n                }\n               ": CheckSlugQueryResult;
     "*[_type == \"subreddit\"] {\n        ...,\n        \"slug\": slug.current,\n        \"moderator\": moderator->,\n        } | order(_createdAt desc)": GetSubredditsQueryResult;

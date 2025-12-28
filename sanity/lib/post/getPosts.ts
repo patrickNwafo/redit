@@ -3,7 +3,7 @@ import { defineQuery } from "groq";
 
 export async function getPosts() {
     const getAllPostsQuery =
-        defineQuery(`*[_type == "post" && isDeleted != false] {
+        defineQuery(`*[_type == "post" && isDeleted == false] {
         _id,
         title, 
         "slug": slug.current,
