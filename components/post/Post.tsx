@@ -1,4 +1,6 @@
 import { GetAllPostsQueryResult } from "@/sanity.types";
+import { getPostVotes } from "@/sanity/lib/vote/getPostVotes";
+import { getUserPostVoteStatus } from "@/sanity/lib/vote/getUserPostVoteStatus";
 
 interface PostProps {
     post: GetAllPostsQueryResult[number];

@@ -443,6 +443,20 @@ export type GetExistingUserQueryResult = {
   isReported?: boolean;
 } | null;
 
+// Source: ./sanity/lib/vote/getPostVotes.ts
+// Variable: getPostVotesQuery
+// Query: {        "upvotes": count(*[_type == "vote" && post._ref == $postId && voteType == "upvote"]),        "downvotes": count(*[_type == "vote" && post._ref == $postId && voteType == "downvote"]),                "netScore": count(*[_type == "vote" && post._ref == $postId && voteType == "upvote"]) - count(*[_type == "vote" && post._ref == $postId && voteType == "downvote"])         }
+export type GetPostVotesQueryResult = {
+  upvotes: number;
+  downvotes: number;
+  netScore: number;
+};
+
+// Source: ./sanity/lib/vote/getUserPostVoteStatus.ts
+// Variable: getUserVotePostVoteStatusQuery
+// Query: *[_type == "vote" && post._ref == $postId && user._ref == $userId][0].voteType
+export type GetUserVotePostVoteStatusQueryResult = "downvote" | "upvote" | null;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
@@ -452,5 +466,7 @@ declare module "@sanity/client" {
     "\n                *[_type == \"subreddit\" && slug.current == $slug][0] {\n                  _id\n                }\n               ": CheckSlugQueryResult;
     "*[_type == \"subreddit\"] {\n        ...,\n        \"slug\": slug.current,\n        \"moderator\": moderator->,\n        } | order(_createdAt desc)": GetSubredditsQueryResult;
     "*[_type == \"user\" && _id == $id][0]": GetExistingUserQueryResult;
+    "\n        {\n        \"upvotes\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"upvote\"]),\n\n        \"downvotes\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"downvote\"]),\n        \n        \"netScore\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"upvote\"]) - count(*[_type == \"vote\" && post._ref == $postId && voteType == \"downvote\"]) \n        }\n        ": GetPostVotesQueryResult;
+    "*[_type == \"vote\" && post._ref == $postId && user._ref == $userId][0].voteType": GetUserVotePostVoteStatusQueryResult;
   }
 }
