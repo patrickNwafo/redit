@@ -15,6 +15,10 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import Image from "next/image";
 import { Button } from "../ui/button";
+// import { createCommunity } from "@/actions/createCommunity";
+import { createCommunity } from "@/actions/createCommunity";
+
+import { useRouter } from "next/navigation";
 
 function CreateCommunityButton() {
     const { user } = useUser();
@@ -27,6 +31,7 @@ function CreateCommunityButton() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -156,7 +161,7 @@ function CreateCommunityButton() {
                     fileType = imageFile.type;
                 }
 
-                const result = await CreateCommunity(
+                const result = await createCommunity(
                     name.trim(),
                     imageBase64,
                     fileName,
@@ -165,11 +170,14 @@ function CreateCommunityButton() {
                     description.trim() || undefined
                 );
 
+                console.log("Community created:", result);
+
                 if ("error" in result && result.error) {
                     setErrorMessage(result.error);
                 } else if ("subreddit" in result && result.subreddit) {
                     setOpen(false);
                     resetForm();
+                    router.push(`/community/${result.subreddit.slug?.current}`);
                 }
             } catch (err) {
                 console.error("Failed to create community", err);

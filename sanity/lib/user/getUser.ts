@@ -1,7 +1,7 @@
 import { sanityFetch } from "../live";
 import { defineQuery } from "groq";
-import { addUser } from "./addUser";
 import { currentUser } from "@clerk/nextjs/server";
+import { addUser } from "./addUser";
 
 interface UserResult {
     _id: string;
@@ -9,6 +9,18 @@ interface UserResult {
     imageUrl: string;
     email: string;
 }
+
+const parseUsername = (username: string) => {
+    // Remove whitespace and convert to camelCase with random nymber to aviod conflicts
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+
+    // convert white space to camelCase and add random number to aviod conflicts
+    return (
+        username
+            .replace(/\s+(.)/g, (_, char) => char.toUpperCase()) // Conver whitespace to camelCase
+            .replace(/\s+/g, "") + randomNum // Remove all whitespace and add random number
+    );
+};
 
 export async function getUser(): Promise<UserResult | { error: string }> {
     try {
@@ -23,7 +35,7 @@ export async function getUser(): Promise<UserResult | { error: string }> {
         console.log(`Found Clerk user: ${loggedInUser.id}`);
 
         const getExistingUserQuery = defineQuery(
-            `*[_type == "user && _id == $id][0]`
+            `*[_type == "user" && _id == $id][0]`
         );
 
         console.log("Checking if user exists in Sanity database");
@@ -33,7 +45,7 @@ export async function getUser(): Promise<UserResult | { error: string }> {
                 id: loggedInUser.id,
             },
         });
-
+        // If user exists, return user
         if (existingUser.data?._id) {
             console.log(
                 `User found in database with ID: ${existingUser.data._id}`
@@ -48,12 +60,29 @@ export async function getUser(): Promise<UserResult | { error: string }> {
             return user;
         }
 
-        console.log("User not found in database");
+        // If user doesn't exist, create a new user
+        console.log("User not found in database, creating new user");
 
         const newUser = await addUser({
             id: loggedInUser.id,
-            username: parseUsername(loggedInUser.fullName),
-            email: loggedInUser.primary,
+            username: parseUsername(loggedInUser.fullName!),
+            email:
+                loggedInUser.primaryEmailAddress?.emailAddress ||
+                loggedInUser.emailAddresses[0].emailAddress,
+            imageUrl: loggedInUser.imageUrl,
         });
-    } catch (error) {}
+
+        console.log(`New user created with ID: ${newUser._id}`);
+        const user = {
+            _id: newUser._id,
+            username: newUser.username!,
+            imageUrl: newUser.imageUrl!,
+            email: newUser.email,
+        };
+
+        return user;
+    } catch (error) {
+        console.error("Error getting user", error);
+        return { error: "Failed to get user" };
+    }
 }
