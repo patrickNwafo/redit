@@ -1,7 +1,13 @@
+// "use client";
+
 import { GetAllPostsQueryResult } from "@/sanity.types";
 import { getPostComments } from "@/sanity/lib/vote/getPostComments";
 import { getPostVotes } from "@/sanity/lib/vote/getPostVotes";
 import { getUserPostVoteStatus } from "@/sanity/lib/vote/getUserPostVoteStatus";
+import TimeAgo from "@/components/TimeAgo";
+import Image from "next/image";
+import { urlFor } from "@/sanity/lib/image";
+import { MessageSquare } from "lucide-react";
 
 interface PostProps {
     post: GetAllPostsQueryResult[number];
@@ -37,10 +43,47 @@ async function Post({ post, userId }: PostProps) {
                                 >
                                     c/{post.subreddit.title}
                                 </a>
-                                <span>.</span>
+                                <span>•</span>
+                                <span>Posted by u/{post.author?.username}</span>
+                                <span>•</span>
+                                {post.publishedAt && (
+                                    <TimeAgo
+                                        date={new Date(post.publishedAt)}
+                                    />
+                                )}
                             </>
                         )}
                     </div>
+
+                    {post.subreddit && (
+                        <div>
+                            <h2 className="text-lg font-medium text-gray-900 mb-2">
+                                {post.title}
+                            </h2>
+                        </div>
+                    )}
+
+                    {post.body && post.body[0]?.children?.[0]?.text && (
+                        <div className="prose prose-sm max-w-none text-gray-700 mb-3">
+                            {post.body[0].children[0].text}
+                        </div>
+                    )}
+
+                    {post.image && post.image.asset?._ref && (
+                        <div className="relative w-full h-64 mb-3 px-2 bg-gray-100/30">
+                            <Image
+                                src={urlFor(post.image).url()}
+                                alt={post.image.alt || "post image"}
+                                fill
+                                className="object-contain rounded-md p-2"
+                            />
+                        </div>
+                    )}
+
+                    <button className="flex items-center px-1 py-2 gap-1 text-sm text-gray-500">
+                        <MessageSquare className="w-4 h-4" />
+                        <span>{comments.length} Comments</span>
+                    </button>
                 </div>
             </div>
 
