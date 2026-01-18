@@ -88,7 +88,13 @@ async function Post({ post, userId }: PostProps) {
 
                     {/* CommentInput */}
                     <CommentInput postId={post._id} />
+
                     {/* CommentList */}
+                    <CommentList
+                        postId={post._id}
+                        comments={comments}
+                        userId={userId}
+                    />
                 </div>
             </div>
 
