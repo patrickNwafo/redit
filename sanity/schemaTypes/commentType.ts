@@ -63,7 +63,7 @@ export const commentType = defineType({
     ],
     preview: {
         select: {
-            title: "body",
+            title: "content",
             subtitle: "author.username",
         },
         prepare: ({ title, subtitle }) => {
