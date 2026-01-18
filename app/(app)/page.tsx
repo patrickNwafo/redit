@@ -1,5 +1,7 @@
-import PostsList from "@/components/post/PostsList";
+// import PostsList from "@/components/post/PostsList";
 // import { Button } from "@/components/ui/button";
+
+import PostsList from "@/components/post/PostsList";
 
 export default function Home() {
     return (
