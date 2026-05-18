@@ -1,19 +1,24 @@
-import { GetPostCommentsQueryResult } from "@/sanity.types";
+import {
+    GetCommentRepliesQueryResult,
+    GetPostCommentsQueryResult,
+} from "@/sanity.types";
 import Comment from "./Comment";
 
 async function CommentList({
     postId,
     comments,
     userId,
+    isNested = false,
 }: {
     postId: string;
-    comments: GetPostCommentsQueryResult;
+    comments: GetPostCommentsQueryResult | GetCommentRepliesQueryResult;
     userId: string | null;
+    isNested?: boolean;
 }) {
-    const isRootComment = !comments.some((comment) => comment.parentComment);
+    const isRootComment = !isNested;
 
     return (
-        <section className="mt-8">
+        <section className={isNested ? "mt-2" : "mt-8"}>
             <div className="flex items-center justify-between">
                 {isRootComment && (
                     <h2 className="text-lg font-semibold text-gray-900">

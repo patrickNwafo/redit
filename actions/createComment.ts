@@ -29,6 +29,6 @@ export async function createComment(
         console.error("Failed to add comment:", error);
         return { error: "Failed to add comment" };
     } finally {
-        revalidatePath("/");
+        revalidatePath("/", "layout");
     }
 }

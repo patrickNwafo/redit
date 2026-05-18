@@ -74,17 +74,15 @@ function CreateCommunityButton() {
     };
 
     const resetForm = () => {
-        const resetForm = () => {
-            setName("");
-            setSlug("");
-            setDescription("");
-            setErrorMessage("");
-            setImagePreview(null);
-            setImageFile(null);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        };
+        setName("");
+        setSlug("");
+        setDescription("");
+        setErrorMessage("");
+        setImagePreview(null);
+        setImageFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     };
     // const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     //     setSlug(e.target.value);

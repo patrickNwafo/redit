@@ -1,72 +1,92 @@
-// "use client";
-
+import CommentInput from "@/components/comment/CommentInput";
+import CommentList from "@/components/comment/CommentList";
+import TimeAgo from "@/components/TimeAgo";
+import VoteButtons from "@/components/vote/VoteButtons";
+import { getPostBodyText } from "@/lib/post";
 import { GetAllPostsQueryResult } from "@/sanity.types";
+import { urlFor } from "@/sanity/lib/image";
 import { getPostComments } from "@/sanity/lib/vote/getPostComments";
 import { getPostVotes } from "@/sanity/lib/vote/getPostVotes";
 import { getUserPostVoteStatus } from "@/sanity/lib/vote/getUserPostVoteStatus";
-import TimeAgo from "@/components/TimeAgo";
+import { ExternalLink, MessageSquare } from "lucide-react";
 import Image from "next/image";
-import { urlFor } from "@/sanity/lib/image";
-import { MessageSquare } from "lucide-react";
-import CommentInput from "../comment/CommentInput";
+import Link from "next/link";
 
 interface PostProps {
-    post: GetAllPostsQueryResult[number];
+    post: GetAllPostsQueryResult[number] & {
+        postKind?: string | null;
+        linkUrl?: string | null;
+    };
     userId: string | null;
 }
 
 async function Post({ post, userId }: PostProps) {
-    const votes = await getPostVotes(post._id);
-    const vote = await getUserPostVoteStatus(post._id, userId);
+    const votesData = await getPostVotes(post._id);
+    const voteStatus = await getUserPostVoteStatus(post._id, userId);
     const comments = await getPostComments(post._id, userId);
-    return (
-        <article
-            key={post._id}
-            className="relative bg-white rounded-md shadow-sm border border-gray-200 hover:border-gray-300 transition-colors"
-        >
-            <div className="flex ">
-                {/* Vote Buttons */}
-                {/* <PostVoteButtons
-                    contentId={post._id}
-                    votes={votes}
-                    vote={vote}
-                    contentType="post"
-                /> */}
 
-                {/* Post Content */}
-                <div className="flex-1 p-3">
+    const votes = {
+        upvotes: votesData?.upvotes ?? 0,
+        downvotes: votesData?.downvotes ?? 0,
+        netScore: votesData?.netScore ?? 0,
+    };
+
+    const bodyText = getPostBodyText(post.body);
+    const subredditSlug =
+        typeof post.subreddit?.slug === "string"
+            ? post.subreddit.slug
+            : post.subreddit?.slug?.current;
+
+    return (
+        <article className="relative bg-white rounded-md shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
+            <div className="flex">
+                <VoteButtons
+                    contentId={post._id}
+                    contentType="post"
+                    votes={votes}
+                    voteStatus={voteStatus ?? null}
+                    isSignedIn={!!userId}
+                />
+
+                <div className="flex-1 p-3 min-w-0">
                     <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                        {post.subreddit && (
+                        {post.subreddit && subredditSlug && (
                             <>
-                                <a
-                                    href={`/community/${post.subreddit.slug}`}
+                                <Link
+                                    href={`/community/${subredditSlug}`}
                                     className="font-medium hover:underline"
                                 >
                                     c/{post.subreddit.title}
-                                </a>
+                                </Link>
                                 <span>•</span>
-                                <span>Posted by u/{post.author?.username}</span>
-                                <span>•</span>
-                                {post.publishedAt && (
-                                    <TimeAgo
-                                        date={new Date(post.publishedAt)}
-                                    />
-                                )}
                             </>
+                        )}
+                        <span>Posted by u/{post.author?.username}</span>
+                        <span>•</span>
+                        {post.publishedAt && (
+                            <TimeAgo date={new Date(post.publishedAt)} />
                         )}
                     </div>
 
-                    {post.subreddit && (
-                        <div>
-                            <h2 className="text-lg font-medium text-gray-900 mb-2">
-                                {post.title}
-                            </h2>
-                        </div>
+                    <h2 className="text-lg font-medium text-gray-900 mb-2">
+                        {post.title}
+                    </h2>
+
+                    {post.postKind === "link" && post.linkUrl && (
+                        <a
+                            href={post.linkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline mb-3 break-all"
+                        >
+                            <ExternalLink className="w-4 h-4 shrink-0" />
+                            {post.linkUrl}
+                        </a>
                     )}
 
-                    {post.body && post.body[0]?.children?.[0]?.text && (
-                        <div className="prose prose-sm max-w-none text-gray-700 mb-3">
-                            {post.body[0].children[0].text}
+                    {bodyText && (
+                        <div className="prose prose-sm max-w-none text-gray-700 mb-3 whitespace-pre-wrap">
+                            {bodyText}
                         </div>
                     )}
 
@@ -74,22 +94,23 @@ async function Post({ post, userId }: PostProps) {
                         <div className="relative w-full h-64 mb-3 px-2 bg-gray-100/30">
                             <Image
                                 src={urlFor(post.image).url()}
-                                alt={post.image.alt || "post image"}
+                                alt={post.image.alt || post.title || "post image"}
                                 fill
                                 className="object-contain rounded-md p-2"
                             />
                         </div>
                     )}
 
-                    <button className="flex items-center px-1 py-2 gap-1 text-sm text-gray-500">
+                    <button
+                        type="button"
+                        className="flex items-center px-1 py-2 gap-1 text-sm text-gray-500"
+                    >
                         <MessageSquare className="w-4 h-4" />
                         <span>{comments.length} Comments</span>
                     </button>
 
-                    {/* CommentInput */}
                     <CommentInput postId={post._id} />
 
-                    {/* CommentList */}
                     <CommentList
                         postId={post._id}
                         comments={comments}
@@ -97,10 +118,6 @@ async function Post({ post, userId }: PostProps) {
                     />
                 </div>
             </div>
-
-            {/* Buttons */}
-            {/* Report Button */}
-            {/* Delete Button */}
         </article>
     );
 }

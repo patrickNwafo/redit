@@ -1,6 +1,7 @@
 // import PostsList from "@/components/post/PostsList";
 // import { Button } from "@/components/ui/button";
 
+import PostFeedActions from "@/components/post/PostFeedActions";
 import PostsList from "@/components/post/PostsList";
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
             <section className="my-8">
                 <div className="mx-auto max-w-7xl px-4">
                     <div className="flex flex-col gap-4">
+                        <PostFeedActions />
                         <PostsList />
                     </div>
                 </div>

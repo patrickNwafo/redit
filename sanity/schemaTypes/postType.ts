@@ -39,6 +39,32 @@ export const postType = defineType({
             validation: (Rule) => Rule.required(),
         }),
         defineField({
+            name: "postKind",
+            title: "Post Kind",
+            type: "string",
+            description: "The type of post (text, image, or link)",
+            options: {
+                list: [
+                    { title: "Text", value: "text" },
+                    { title: "Image", value: "image" },
+                    { title: "Link", value: "link" },
+                ],
+                layout: "radio",
+            },
+            initialValue: "text",
+            validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+            name: "linkUrl",
+            title: "Link URL",
+            type: "url",
+            description: "External URL for link posts",
+            validation: (Rule) =>
+                Rule.uri({
+                    scheme: ["http", "https"],
+                }),
+        }),
+        defineField({
             name: "body",
             title: "Body",
             type: "array",

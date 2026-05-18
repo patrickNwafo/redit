@@ -1,20 +1,34 @@
 import { sanityFetch } from "../live";
 import { defineQuery } from "groq";
 
-export async function getPosts() {
-    const getAllPostsQuery =
-        defineQuery(`*[_type == "post" && isDeleted == false] {
+const postsProjection = `{
         _id,
-        title, 
-        "slug": slug.current,
+        title,
+        postKind,
+        linkUrl,
         body,
         publishedAt,
         "author": author->,
-        "subreddit": subreddit->, 
+        "subreddit": subreddit->{
+            ...,
+            "slug": slug.current
+        },
         image,
         isDeleted
-        } | order(publishedAt desc)`);
+    }`;
 
-    const posts = await sanityFetch({ query: getAllPostsQuery });
+export async function getPosts(subredditSlug?: string) {
+    const getAllPostsQuery = subredditSlug
+        ? defineQuery(
+              `*[_type == "post" && isDeleted == false && subreddit->slug.current == $subredditSlug] ${postsProjection} | order(publishedAt desc)`,
+          )
+        : defineQuery(
+              `*[_type == "post" && isDeleted == false] ${postsProjection} | order(publishedAt desc)`,
+          );
+
+    const posts = await sanityFetch({
+        query: getAllPostsQuery,
+        params: subredditSlug ? { subredditSlug } : {},
+    });
     return posts.data;
 }

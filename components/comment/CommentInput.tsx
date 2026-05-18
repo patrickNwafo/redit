@@ -10,9 +10,11 @@ import { createComment } from "@/actions/createComment";
 function CommentInput({
     postId,
     parentCommentId,
+    onSuccess,
 }: {
     postId: string;
     parentCommentId?: string;
+    onSuccess?: () => void;
 }) {
     const [content, setContent] = useState("");
     const [isPending, startTransition] = useTransition();
@@ -33,8 +35,9 @@ function CommentInput({
                 if (result.error) {
                     console.error("Error adding comment:", result.error);
                 } else {
-                    // Clear input after succesful submission
                     setContent("");
+                    onSuccess?.();
+                    router.refresh();
                 }
             } catch (error) {
                 console.error("Failed to add comment:", error);

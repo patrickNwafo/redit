@@ -58,7 +58,7 @@ export async function AppSidebar({
                 title: "Comunities",
                 url: "#",
                 items:
-                    subreddits?.map((subreddit: any) => ({
+                    subreddits?.map((subreddit) => ({
                         title: subreddit.title || "unknown",
                         url: `/community/${subreddit.slug}`,
                         isActive: false,
