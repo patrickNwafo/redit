@@ -32,6 +32,8 @@ import Image from "next/image";
 import ReddishLogo from "@/images/Reddish Full.png";
 import { getSubreddits } from "@/sanity/lib/subreddit/getSubreddits";
 import CreateCommunityButton from "./header/CreateCommunityButton";
+import ProfileLink from "./header/ProfileLink";
+import { getUser } from "@/sanity/lib/user/getUser";
 
 type SidebarData = {
     navMain: {
@@ -48,8 +50,9 @@ type SidebarData = {
 export async function AppSidebar({
     ...props
 }: React.ComponentProps<typeof Sidebar>) {
-    // TODO: get all subreddits from sanity
     const subreddits = await getSubreddits();
+    const user = await getUser();
+    const sanityUsername = "error" in user ? null : user.username;
 
     // This is sample data.
     const sidebarData: SidebarData = {
@@ -58,7 +61,7 @@ export async function AppSidebar({
                 title: "Comunities",
                 url: "#",
                 items:
-                    subreddits?.map((subreddit) => ({
+                    subreddits?.map((subreddit: { title?: string; slug?: string }) => ({
                         title: subreddit.title || "unknown",
                         url: `/community/${subreddit.slug}`,
                         isActive: false,
@@ -115,6 +118,8 @@ export async function AppSidebar({
                                     Hot/Controversial
                                 </Link>
                             </SidebarMenuButton>
+
+                            <ProfileLink sanityUsername={sanityUsername} />
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>

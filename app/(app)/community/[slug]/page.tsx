@@ -1,8 +1,11 @@
 import PostsList from "@/components/post/PostsList";
 import PostFeedActions from "@/components/post/PostFeedActions";
+import { isModerator } from "@/sanity/lib/mod/isModerator";
 import { urlFor } from "@/sanity/lib/image";
 import { getSubredditBySlug } from "@/sanity/lib/subreddit/getSubredditBySlug";
+import { getUser } from "@/sanity/lib/user/getUser";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function CommunityPage({
@@ -17,10 +20,20 @@ export default async function CommunityPage({
         notFound();
     }
 
+    const user = await getUser();
+    const userId = "error" in user ? null : user._id;
+    const showModLink = isModerator(userId, {
+        moderator: { _ref: subreddit.moderator?._id },
+    });
+
     return (
         <>
             <section className="bg-white border-b">
-                <CommunityBanner subreddit={subreddit} slug={slug} />
+                <CommunityBanner
+                    subreddit={subreddit}
+                    slug={slug}
+                    showModLink={showModLink}
+                />
             </section>
 
             <section className="my-8">
@@ -36,12 +49,15 @@ export default async function CommunityPage({
 function CommunityBanner({
     subreddit,
     slug,
+    showModLink,
 }: {
     subreddit: NonNullable<Awaited<ReturnType<typeof getSubredditBySlug>>>;
     slug: string;
+    showModLink: boolean;
 }) {
     return (
         <div className="mx-auto max-w-7xl px-4 py-6">
+            <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 {subreddit.image?.asset?._ref && (
                     <div className="relative w-16 h-16 shrink-0">
@@ -61,6 +77,15 @@ function CommunityBanner({
                         </p>
                     )}
                 </div>
+            </div>
+            {showModLink && (
+                <Link
+                    href={`/community/${slug}/mod`}
+                    className="text-sm font-medium text-orange-600 hover:underline shrink-0"
+                >
+                    Mod queue
+                </Link>
+            )}
             </div>
         </div>
     );

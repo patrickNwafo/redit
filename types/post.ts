@@ -5,6 +5,7 @@ export type PostFeedItem = {
     title?: string | null;
     postKind?: string | null;
     linkUrl?: string | null;
+    flair?: string | null;
     body?: Array<{
         children?: Array<{ text?: string }>;
     }> | null;
@@ -18,6 +19,7 @@ export type PostFeedItem = {
         _id: string;
         title?: string;
         slug?: string | { current?: string };
+        flairOptions?: Array<{ label?: string; color?: string }> | null;
     } | null;
     image?: {
         asset?: { _ref?: string };

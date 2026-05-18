@@ -1,6 +1,8 @@
 "use server";
 
 import { addComment } from "@/sanity/lib/comment/addComment";
+import { getPostSubredditId } from "@/sanity/lib/post/getPostSubredditId";
+import { isUserBannedFromSubreddit } from "@/sanity/lib/user/isUserBannedFromSubreddit";
 import { getUser } from "@/sanity/lib/user/getUser";
 
 import { revalidatePath } from "next/cache";
@@ -14,6 +16,14 @@ export async function createComment(
 
     if ("error" in user) {
         return { error: user.error };
+    }
+
+    const subredditId = await getPostSubredditId(postId);
+    if (subredditId) {
+        const banned = await isUserBannedFromSubreddit(user._id, subredditId);
+        if (banned) {
+            return { error: "You are banned from this community" };
+        }
     }
 
     try {

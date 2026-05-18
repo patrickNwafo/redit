@@ -8,6 +8,7 @@ interface UserResult {
     username: string;
     imageUrl: string;
     email: string;
+    isBanned?: boolean;
 }
 
 const parseUsername = (username: string) => {
@@ -35,7 +36,13 @@ export async function getUser(): Promise<UserResult | { error: string }> {
         console.log(`Found Clerk user: ${loggedInUser.id}`);
 
         const getExistingUserQuery = defineQuery(
-            `*[_type == "user" && _id == $id][0]`
+            `*[_type == "user" && _id == $id][0] {
+                _id,
+                username,
+                imageUrl,
+                email,
+                isBanned
+            }`
         );
 
         console.log("Checking if user exists in Sanity database");
@@ -47,16 +54,16 @@ export async function getUser(): Promise<UserResult | { error: string }> {
         });
         // If user exists, return user
         if (existingUser.data?._id) {
-            console.log(
-                `User found in database with ID: ${existingUser.data._id}`
-            );
+            if ((existingUser.data as { isBanned?: boolean }).isBanned) {
+                return { error: "Your account has been banned" };
+            }
+
             const user = {
                 _id: existingUser.data._id,
                 username: existingUser.data.username!,
                 imageUrl: existingUser.data.imageUrl!,
                 email: existingUser.data.email!,
             };
-            console.log("Returning user from database");
             return user;
         }
 

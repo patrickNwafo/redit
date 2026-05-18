@@ -7,6 +7,7 @@ export async function getSubreddits() {
         ...,
         "slug": slug.current,
         "moderator": moderator->,
+        flairOptions
         } | order(_createdAt desc)`);
 
     const subreddits = await sanityFetch({query: getSubredditsQuery})

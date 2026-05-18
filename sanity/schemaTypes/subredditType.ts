@@ -55,6 +55,42 @@ export const subredditType = defineType({
             validation: (Rule) => Rule.required(),
         }),
         defineField({
+            name: "flairOptions",
+            title: "Post Flair Options",
+            type: "array",
+            description: "Flair labels members can use on posts",
+            of: [
+                {
+                    type: "object",
+                    fields: [
+                        {
+                            name: "label",
+                            title: "Label",
+                            type: "string",
+                            validation: (Rule) => Rule.required(),
+                        },
+                        {
+                            name: "color",
+                            title: "Color",
+                            type: "string",
+                            description: "Hex color for flair badge",
+                            initialValue: "#ea580c",
+                        },
+                    ],
+                    preview: {
+                        select: { title: "label" },
+                    },
+                },
+            ],
+        }),
+        defineField({
+            name: "bannedUsers",
+            title: "Banned Users",
+            type: "array",
+            of: [{ type: "reference", to: [{ type: "user" }] }],
+            description: "Users banned from this community",
+        }),
+        defineField({
             name: "createdAt",
             title: "Created At",
             type: "datetime",

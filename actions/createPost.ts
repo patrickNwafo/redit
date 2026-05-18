@@ -2,6 +2,7 @@
 
 import { ImageData } from "@/actions/createCommunity";
 import { createPost as createPostDoc } from "@/sanity/lib/post/createPost";
+import { isUserBannedFromSubreddit } from "@/sanity/lib/user/isUserBannedFromSubreddit";
 import { getUser } from "@/sanity/lib/user/getUser";
 import { revalidatePath } from "next/cache";
 
@@ -14,6 +15,7 @@ export async function createPost(
     imageBase64?: string | null,
     imageFileName?: string | null,
     imageContentType?: string | null,
+    flair?: string,
 ) {
     const user = await getUser();
 
@@ -27,6 +29,11 @@ export async function createPost(
 
     if (postKind === "link" && !linkUrl?.trim()) {
         return { error: "Link URL is required for link posts" };
+    }
+
+    const banned = await isUserBannedFromSubreddit(user._id, subredditId);
+    if (banned) {
+        return { error: "You are banned from this community" };
     }
 
     let imageData: ImageData = null;
@@ -46,6 +53,7 @@ export async function createPost(
             userId: user._id,
             body,
             linkUrl: linkUrl?.trim(),
+            flair: flair?.trim() || undefined,
             imageData: postKind === "image" ? imageData : null,
         });
 

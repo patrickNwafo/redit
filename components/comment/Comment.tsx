@@ -8,6 +8,7 @@ import {
 import { getCommentReplies } from "@/sanity/lib/comment/getCommentReplies";
 import { UserCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import CommentMenu from "./CommentMenu";
 import CommentList from "./CommentList";
 import CommentReply from "./CommentReply";
@@ -51,9 +52,18 @@ async function Comment({
                             <UserCircle className="w-8 h-8 text-gray-300 shrink-0" />
                         )}
 
-                        <h3 className="font-medium text-gray-900 text-sm">
-                            {comment.author?.username || "Anonymous"}
-                        </h3>
+                        {comment.author?.username ? (
+                            <Link
+                                href={`/user/${comment.author.username}`}
+                                className="font-medium text-gray-900 text-sm hover:underline"
+                            >
+                                {comment.author.username}
+                            </Link>
+                        ) : (
+                            <h3 className="font-medium text-gray-900 text-sm">
+                                Anonymous
+                            </h3>
+                        )}
                         <span className="text-xs text-gray-500">
                             <TimeAgo date={new Date(comment.createdAt!)} />
                         </span>

@@ -21,6 +21,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 type SubredditOption = {
     _id: string;
     title?: string | null;
+    flairOptions?: Array<{ label?: string; color?: string }> | null;
 };
 
 type PostKind = "text" | "image" | "link";
@@ -42,6 +43,7 @@ function CreatePostButton({
     const [subredditId, setSubredditId] = useState(
         defaultSubredditId || subreddits[0]?._id || "",
     );
+    const [flair, setFlair] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -59,6 +61,7 @@ function CreatePostButton({
         setBody("");
         setLinkUrl("");
         setPostKind("text");
+        setFlair("");
         setErrorMessage(null);
         setImagePreview(null);
         setImageFile(null);
@@ -104,6 +107,7 @@ function CreatePostButton({
                     imageBase64,
                     fileName,
                     fileType,
+                    flair || undefined,
                 );
 
                 if ("error" in result && result.error) {
@@ -120,6 +124,9 @@ function CreatePostButton({
             }
         });
     };
+
+    const selectedSubreddit = subreddits.find((s) => s._id === subredditId);
+    const flairOptions = selectedSubreddit?.flairOptions ?? [];
 
     const kinds: { value: PostKind; label: string }[] = [
         { value: "text", label: "Text" },
@@ -171,8 +178,38 @@ function CreatePostButton({
                     <CommunitySelect
                         subreddits={subreddits}
                         subredditId={subredditId}
-                        onChange={setSubredditId}
+                        onChange={(id) => {
+                            setSubredditId(id);
+                            setFlair("");
+                        }}
                     />
+
+                    {flairOptions.length > 0 && (
+                        <div className="space-y-2">
+                            <label
+                                htmlFor="flair"
+                                className="text-sm font-medium"
+                            >
+                                Flair (optional)
+                            </label>
+                            <select
+                                id="flair"
+                                value={flair}
+                                onChange={(e) => setFlair(e.target.value)}
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                            >
+                                <option value="">No flair</option>
+                                {flairOptions.map((opt) => (
+                                    <option
+                                        key={opt.label}
+                                        value={opt.label}
+                                    >
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <div className="space-y-2">
                         <label htmlFor="title" className="text-sm font-medium">

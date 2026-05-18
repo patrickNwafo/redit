@@ -6,7 +6,9 @@ export async function getSubredditBySlug(slug: string) {
         *[_type == "subreddit" && slug.current == $slug][0] {
             ...,
             "slug": slug.current,
-            "moderator": moderator->
+            "moderator": moderator->{ _id, username },
+            flairOptions,
+            "bannedUserIds": bannedUsers[]._ref
         }
     `);
 

@@ -41,6 +41,20 @@ export const userType = defineType({
             validation: (Rule) => Rule.required(),
         }),
         defineField({
+            name: "bio",
+            title: "Bio",
+            type: "text",
+            description: "Short profile bio",
+            validation: (Rule) => Rule.max(300),
+        }),
+        defineField({
+            name: "isBanned",
+            title: "Is Banned",
+            type: "boolean",
+            description: "Whether this user is banned site-wide",
+            initialValue: false,
+        }),
+        defineField({
             name: "isReported",
             title: "Is Reported",
             type: "boolean",

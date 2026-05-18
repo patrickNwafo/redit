@@ -10,6 +10,7 @@ interface CreatePostParams {
     userId: string;
     body?: string;
     linkUrl?: string;
+    flair?: string;
     imageData?: ImageData | null;
 }
 
@@ -37,6 +38,7 @@ export async function createPost({
     userId,
     body,
     linkUrl,
+    flair,
     imageData,
 }: CreatePostParams) {
     try {
@@ -62,6 +64,7 @@ export async function createPost({
             publishedAt: new Date().toISOString(),
             isDeleted: false,
             isReported: false,
+            ...(flair ? { flair } : {}),
             ...(body?.trim() ? { body: textToBlocks(body.trim()) } : {}),
             ...(postKind === "link" && linkUrl ? { linkUrl } : {}),
             ...(imageAsset

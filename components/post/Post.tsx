@@ -1,10 +1,14 @@
+import AwardButton from "@/components/award/AwardButton";
+import PostAwards from "@/components/award/PostAwards";
 import CommentInput from "@/components/comment/CommentInput";
 import CommentList from "@/components/comment/CommentList";
+import FlairBadge from "@/components/post/FlairBadge";
 import PostMenu from "@/components/post/PostMenu";
 import TimeAgo from "@/components/TimeAgo";
 import VoteButtons from "@/components/vote/VoteButtons";
 import { getPostBodyText } from "@/lib/post";
 import { PostFeedItem } from "@/types/post";
+import { getAwards, getPostAwards } from "@/sanity/lib/award/getAwards";
 import { urlFor } from "@/sanity/lib/image";
 import { getPostComments } from "@/sanity/lib/vote/getPostComments";
 import { getPostVotes } from "@/sanity/lib/vote/getPostVotes";
@@ -19,9 +23,14 @@ interface PostProps {
 }
 
 async function Post({ post, userId }: PostProps) {
-    const votesData = await getPostVotes(post._id);
-    const voteStatus = await getUserPostVoteStatus(post._id, userId);
-    const comments = await getPostComments(post._id, userId);
+    const [votesData, voteStatus, comments, awardGrants, availableAwards] =
+        await Promise.all([
+            getPostVotes(post._id),
+            getUserPostVoteStatus(post._id, userId),
+            getPostComments(post._id, userId),
+            getPostAwards(post._id),
+            getAwards(),
+        ]);
 
     const votes = {
         upvotes: votesData?.upvotes ?? 0,
@@ -34,6 +43,10 @@ async function Post({ post, userId }: PostProps) {
         typeof post.subreddit?.slug === "string"
             ? post.subreddit.slug
             : post.subreddit?.slug?.current;
+
+    const flairOption = post.subreddit?.flairOptions?.find(
+        (f) => f.label === post.flair,
+    );
 
     return (
         <article className="relative bg-white rounded-md shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
@@ -60,7 +73,16 @@ async function Post({ post, userId }: PostProps) {
                                     <span>•</span>
                                 </>
                             )}
-                            <span>Posted by u/{post.author?.username}</span>
+                            {post.author?.username ? (
+                                <Link
+                                    href={`/user/${post.author.username}`}
+                                    className="hover:underline"
+                                >
+                                    u/{post.author.username}
+                                </Link>
+                            ) : (
+                                <span>Anonymous</span>
+                            )}
                             <span>•</span>
                             {post.publishedAt && (
                                 <TimeAgo date={new Date(post.publishedAt)} />
@@ -77,9 +99,19 @@ async function Post({ post, userId }: PostProps) {
                         />
                     </div>
 
-                    <h2 className="text-lg font-medium text-gray-900 mb-2">
-                        {post.title}
-                    </h2>
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {post.flair && (
+                            <FlairBadge
+                                label={post.flair}
+                                color={flairOption?.color}
+                            />
+                        )}
+                        <h2 className="text-lg font-medium text-gray-900">
+                            {post.title}
+                        </h2>
+                    </div>
+
+                    <PostAwards grants={awardGrants} />
 
                     {post.postKind === "link" && post.linkUrl && (
                         <a
@@ -110,13 +142,20 @@ async function Post({ post, userId }: PostProps) {
                         </div>
                     )}
 
-                    <button
-                        type="button"
-                        className="flex items-center px-1 py-2 gap-1 text-sm text-gray-500"
-                    >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>{comments.length} Comments</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            className="flex items-center px-1 py-2 gap-1 text-sm text-gray-500"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                            <span>{comments.length} Comments</span>
+                        </button>
+                        <AwardButton
+                            postId={post._id}
+                            awards={availableAwards}
+                            isSignedIn={!!userId}
+                        />
+                    </div>
 
                     <CommentInput postId={post._id} />
 

@@ -6,14 +6,16 @@ import Post from "./Post";
 
 async function PostsList({
     subredditSlug,
+    authorUsername,
     sort = "new",
     emptyMessage = "No posts yet. Be the first to post!",
 }: {
     subredditSlug?: string;
+    authorUsername?: string;
     sort?: PostSort;
     emptyMessage?: string;
 } = {}) {
-    const posts = await getPosts({ subredditSlug, sort });
+    const posts = await getPosts({ subredditSlug, authorUsername, sort });
     const user = await currentUser();
 
     if (!posts?.length) {

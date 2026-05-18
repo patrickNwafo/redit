@@ -8,12 +8,14 @@ const postsProjection = `{
         title,
         postKind,
         linkUrl,
+        flair,
         body,
         publishedAt,
         "author": author->,
         "subreddit": subreddit->{
             ...,
-            "slug": slug.current
+            "slug": slug.current,
+            flairOptions
         },
         image,
         isDeleted,
@@ -28,14 +30,19 @@ const postsProjection = `{
 export async function getPosts(
     options: {
         subredditSlug?: string;
+        authorUsername?: string;
         sort?: PostSort;
     } = {},
 ) {
-    const { subredditSlug, sort = "new" } = options;
+    const { subredditSlug, authorUsername, sort = "new" } = options;
 
-    const filter = subredditSlug
-        ? `_type == "post" && isDeleted == false && subreddit->slug.current == $subredditSlug`
-        : `_type == "post" && isDeleted == false`;
+    let filter = `_type == "post" && isDeleted == false`;
+    if (subredditSlug) {
+        filter += ` && subreddit->slug.current == $subredditSlug`;
+    }
+    if (authorUsername) {
+        filter += ` && author->username == $authorUsername`;
+    }
 
     const getAllPostsQuery = defineQuery(
         `*[${filter}] ${postsProjection}`,
@@ -43,7 +50,10 @@ export async function getPosts(
 
     const result = await sanityFetch({
         query: getAllPostsQuery,
-        params: subredditSlug ? { subredditSlug } : {},
+        params: {
+            ...(subredditSlug ? { subredditSlug } : {}),
+            ...(authorUsername ? { authorUsername } : {}),
+        },
     });
 
     const posts = (result.data ?? []) as PostFeedItem[];

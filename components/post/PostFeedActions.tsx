@@ -18,9 +18,10 @@ async function PostFeedActions({
 
     return (
         <CreatePostButton
-            subreddits={subreddits.map((s) => ({
+            subreddits={subreddits.map((s: { _id: string; title?: string; flairOptions?: Array<{ label?: string; color?: string }> }) => ({
                 _id: s._id,
                 title: s.title,
+                flairOptions: s.flairOptions,
             }))}
             defaultSubredditId={defaultSubredditId}
         />

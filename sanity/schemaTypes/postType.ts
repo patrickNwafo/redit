@@ -80,6 +80,12 @@ export const postType = defineType({
         //     of: [{ type: "block" }],
         // }),
         defineField({
+            name: "flair",
+            title: "Flair",
+            type: "string",
+            description: "Post flair label from the subreddit",
+        }),
+        defineField({
             name: "image",
             title: "Image",
             type: "image",
