@@ -1,9 +1,10 @@
 import CommentInput from "@/components/comment/CommentInput";
 import CommentList from "@/components/comment/CommentList";
+import PostMenu from "@/components/post/PostMenu";
 import TimeAgo from "@/components/TimeAgo";
 import VoteButtons from "@/components/vote/VoteButtons";
 import { getPostBodyText } from "@/lib/post";
-import { GetAllPostsQueryResult } from "@/sanity.types";
+import { PostFeedItem } from "@/types/post";
 import { urlFor } from "@/sanity/lib/image";
 import { getPostComments } from "@/sanity/lib/vote/getPostComments";
 import { getPostVotes } from "@/sanity/lib/vote/getPostVotes";
@@ -13,10 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface PostProps {
-    post: GetAllPostsQueryResult[number] & {
-        postKind?: string | null;
-        linkUrl?: string | null;
-    };
+    post: PostFeedItem;
     userId: string | null;
 }
 
@@ -49,23 +47,34 @@ async function Post({ post, userId }: PostProps) {
                 />
 
                 <div className="flex-1 p-3 min-w-0">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                        {post.subreddit && subredditSlug && (
-                            <>
-                                <Link
-                                    href={`/community/${subredditSlug}`}
-                                    className="font-medium hover:underline"
-                                >
-                                    c/{post.subreddit.title}
-                                </Link>
-                                <span>•</span>
-                            </>
-                        )}
-                        <span>Posted by u/{post.author?.username}</span>
-                        <span>•</span>
-                        {post.publishedAt && (
-                            <TimeAgo date={new Date(post.publishedAt)} />
-                        )}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap min-w-0">
+                            {post.subreddit && subredditSlug && (
+                                <>
+                                    <Link
+                                        href={`/community/${subredditSlug}`}
+                                        className="font-medium hover:underline"
+                                    >
+                                        c/{post.subreddit.title}
+                                    </Link>
+                                    <span>•</span>
+                                </>
+                            )}
+                            <span>Posted by u/{post.author?.username}</span>
+                            <span>•</span>
+                            {post.publishedAt && (
+                                <TimeAgo date={new Date(post.publishedAt)} />
+                            )}
+                        </div>
+                        <PostMenu
+                            postId={post._id}
+                            authorId={post.author?._id}
+                            userId={userId}
+                            title={post.title ?? ""}
+                            body={post.body}
+                            linkUrl={post.linkUrl}
+                            postKind={post.postKind}
+                        />
                     </div>
 
                     <h2 className="text-lg font-medium text-gray-900 mb-2">

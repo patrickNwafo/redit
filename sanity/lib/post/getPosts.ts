@@ -1,5 +1,7 @@
-import { sanityFetch } from "../live";
+import { PostSort, sortPosts } from "@/lib/postSort";
+import { PostFeedItem } from "@/types/post";
 import { defineQuery } from "groq";
+import { sanityFetch } from "../live";
 
 const postsProjection = `{
         _id,
@@ -14,21 +16,36 @@ const postsProjection = `{
             "slug": slug.current
         },
         image,
-        isDeleted
+        isDeleted,
+        "votes": {
+            "upvotes": count(*[_type == "vote" && post._ref == ^._id && voteType == "upvote"]),
+            "downvotes": count(*[_type == "vote" && post._ref == ^._id && voteType == "downvote"]),
+            "netScore": count(*[_type == "vote" && post._ref == ^._id && voteType == "upvote"]) - count(*[_type == "vote" && post._ref == ^._id && voteType == "downvote"])
+        },
+        "commentCount": count(*[_type == "comment" && post._ref == ^._id && isDeleted != true])
     }`;
 
-export async function getPosts(subredditSlug?: string) {
-    const getAllPostsQuery = subredditSlug
-        ? defineQuery(
-              `*[_type == "post" && isDeleted == false && subreddit->slug.current == $subredditSlug] ${postsProjection} | order(publishedAt desc)`,
-          )
-        : defineQuery(
-              `*[_type == "post" && isDeleted == false] ${postsProjection} | order(publishedAt desc)`,
-          );
+export async function getPosts(
+    options: {
+        subredditSlug?: string;
+        sort?: PostSort;
+    } = {},
+) {
+    const { subredditSlug, sort = "new" } = options;
 
-    const posts = await sanityFetch({
+    const filter = subredditSlug
+        ? `_type == "post" && isDeleted == false && subreddit->slug.current == $subredditSlug`
+        : `_type == "post" && isDeleted == false`;
+
+    const getAllPostsQuery = defineQuery(
+        `*[${filter}] ${postsProjection}`,
+    );
+
+    const result = await sanityFetch({
         query: getAllPostsQuery,
         params: subredditSlug ? { subredditSlug } : {},
     });
-    return posts.data;
+
+    const posts = (result.data ?? []) as PostFeedItem[];
+    return sortPosts(posts, sort);
 }

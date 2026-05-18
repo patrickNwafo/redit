@@ -18,7 +18,7 @@ export function SearchForm() {
                     <SidebarInput
                         id="search"
                         name="query"
-                        placeholder="Search the communities..."
+                        placeholder="Search posts & communities..."
                         className="pl-8"
                     />
                     <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 opacity-50 select-none" />

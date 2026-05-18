@@ -8,6 +8,7 @@ import {
 import { getCommentReplies } from "@/sanity/lib/comment/getCommentReplies";
 import { UserCircle } from "lucide-react";
 import Image from "next/image";
+import CommentMenu from "./CommentMenu";
 import CommentList from "./CommentList";
 import CommentReply from "./CommentReply";
 
@@ -36,7 +37,8 @@ async function Comment({
                 />
 
                 <div className="flex-1 space-y-2 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
                         {comment.author?.imageUrl ? (
                             <Image
                                 src={comment.author.imageUrl}
@@ -55,6 +57,13 @@ async function Comment({
                         <span className="text-xs text-gray-500">
                             <TimeAgo date={new Date(comment.createdAt!)} />
                         </span>
+                        </div>
+                        <CommentMenu
+                            commentId={comment._id}
+                            authorId={comment.author?._id}
+                            userId={userId}
+                            content={comment.content ?? ""}
+                        />
                     </div>
 
                     <p className="text-gray-700 leading-relaxed text-sm">
