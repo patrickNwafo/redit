@@ -146,6 +146,8 @@ export type Post = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "subreddit";
   };
+  postKind?: "text" | "image" | "link";
+  linkUrl?: string;
   body?: Array<{
     children?: Array<{
       marks?: Array<string>;
@@ -291,32 +293,16 @@ export type User = {
 
 export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityFileAsset | Geopoint | Vote | Comment | Post | Subreddit | SanityImageCrop | SanityImageHotspot | SanityImageAsset | SanityAssetSourceData | SanityImageMetadata | Slug | User;
 export declare const internalGroqTypeReferenceTo: unique symbol;
-// Source: ./sanity/lib/post/getPosts.ts
-// Variable: getAllPostsQuery
-// Query: *[_type == "post" && isDeleted == false] {        _id,        title,         "slug": slug.current,        body,        publishedAt,        "author": author->,        "subreddit": subreddit->,         image,        isDeleted        } | order(publishedAt desc)
-export type GetAllPostsQueryResult = Array<{
+// Source: ./sanity/lib/comment/getCommentReplies.ts
+// Variable: getCommentRepliesQuery
+// Query: *[_type == "comment" && parentComment._ref == $commentId] {        ...,        _id,        content,        createdAt,        "author": author->,        "replies": *[_type == "comment" && parentComment._ref == ^._id],        "votes": {        "upvotes": count(*[_type == "vote" && comment._ref == ^._id && voteType == "upvote"]),        "downvotes": count(*[_type == "vote" && comment._ref == ^._id && voteType == "downvote"]),        "netScore": count(*[_type == "vote" && comment._ref == ^._id && voteType == "upvote"]) - count(*[_type == "vote" && comment._ref == ^._id && voteType == "downvote"]),        "voteStatus": *[_type == "vote" && comment._ref == ^._id && user._ref == $userId][0].voteType,        },        } | order(votes.netScore desc)
+export type GetCommentRepliesQueryResult = Array<{
   _id: string;
-  title: string | null;
-  slug: null;
-  body: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }> | null;
-  publishedAt: string | null;
+  _type: "comment";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  content: string | null;
   author: {
     _id: string;
     _type: "user";
@@ -329,50 +315,56 @@ export type GetAllPostsQueryResult = Array<{
     joinedAt?: string;
     isReported?: boolean;
   } | null;
-  subreddit: {
+  post?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "post";
+  };
+  parentComment?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "comment";
+  };
+  isReported?: boolean;
+  createdAt: string | null;
+  isDeleted?: boolean;
+  replies: Array<{
     _id: string;
-    _type: "subreddit";
+    _type: "comment";
     _createdAt: string;
     _updatedAt: string;
     _rev: string;
-    title?: string;
-    description?: string;
-    slug?: Slug;
-    image?: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      alt?: string;
-      _type: "image";
-    };
-    moderator?: {
+    content?: string;
+    author?: {
       _ref: string;
       _type: "reference";
       _weak?: boolean;
       [internalGroqTypeReferenceTo]?: "user";
     };
-    createdAt?: string;
-  } | null;
-  image: {
-    asset?: {
+    post?: {
       _ref: string;
       _type: "reference";
       _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      [internalGroqTypeReferenceTo]?: "post";
     };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    _type: "image";
-  } | null;
-  isDeleted: boolean | null;
+    parentComment?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "comment";
+    };
+    isReported?: boolean;
+    createdAt?: string;
+    isDeleted?: boolean;
+  }>;
+  votes: {
+    upvotes: number;
+    downvotes: number;
+    netScore: number;
+    voteStatus: "downvote" | "upvote" | null;
+  };
 }>;
 
 // Source: ./sanity/lib/subreddit/createSubreddit.ts
@@ -385,6 +377,46 @@ export type CheckExistingQueryResult = {
 // Query: *[_type == "subreddit" && slug.current == $slug][0] {                  _id                }
 export type CheckSlugQueryResult = {
   _id: string;
+} | null;
+
+// Source: ./sanity/lib/subreddit/getSubredditBySlug.ts
+// Variable: query
+// Query: *[_type == "subreddit" && slug.current == $slug][0] {            ...,            "slug": slug.current,            "moderator": moderator->        }
+export type QueryResult = {
+  _id: string;
+  _type: "subreddit";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  description?: string;
+  slug: string | null;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  moderator: {
+    _id: string;
+    _type: "user";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    username?: string;
+    email?: string;
+    imageUrl?: string;
+    joinedAt?: string;
+    isReported?: boolean;
+  } | null;
+  createdAt?: string;
 } | null;
 
 // Source: ./sanity/lib/subreddit/getSubreddits.ts
@@ -443,6 +475,88 @@ export type GetExistingUserQueryResult = {
   isReported?: boolean;
 } | null;
 
+// Source: ./sanity/lib/vote/castVote.ts
+// Variable: existingVoteQuery
+// Query: *[_type == "vote" && user._ref == $userId && (            ($contentType == "post" && post._ref == $contentId) ||            ($contentType == "comment" && comment._ref == $contentId)        )][0] {            _id,            voteType        }
+export type ExistingVoteQueryResult = {
+  _id: string;
+  voteType: "downvote" | "upvote" | null;
+} | null;
+
+// Source: ./sanity/lib/vote/getPostComments.ts
+// Variable: getPostCommentsQuery
+// Query: *[_type == "comment" && post._ref == $postId && !defined(parentComment)] {            ...,            _id,            content,            createdAt,            "author": author->,            "replies": *[_type == "comment" && parentComment._ref == ^._id],            "votes": {            "upvotes": count(*[_type == "vote" && comment._ref == ^._id && voteType == "upvote"]),            "downvotes": count(*[_type == "vote" && comment._ref == ^._id && voteType == "downvote"]),            "netScore": count(*[_type == "vote" && comment._ref == ^._id && voteType == "upvote"]) - count(*[_type == "vote" && comment._ref == ^._id && voteType == "downvote"]),            "voteStatus": *[_type == "vote" && comment._ref == ^._id && user._ref == $userId][0].voteType,            },          } | order(votes.netScore desc, createdAt desc)
+export type GetPostCommentsQueryResult = Array<{
+  _id: string;
+  _type: "comment";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  content: string | null;
+  author: {
+    _id: string;
+    _type: "user";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    username?: string;
+    email?: string;
+    imageUrl?: string;
+    joinedAt?: string;
+    isReported?: boolean;
+  } | null;
+  post?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "post";
+  };
+  parentComment?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "comment";
+  };
+  isReported?: boolean;
+  createdAt: string | null;
+  isDeleted?: boolean;
+  replies: Array<{
+    _id: string;
+    _type: "comment";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    content?: string;
+    author?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "user";
+    };
+    post?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "post";
+    };
+    parentComment?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "comment";
+    };
+    isReported?: boolean;
+    createdAt?: string;
+    isDeleted?: boolean;
+  }>;
+  votes: {
+    upvotes: number;
+    downvotes: number;
+    netScore: number;
+    voteStatus: "downvote" | "upvote" | null;
+  };
+}>;
+
 // Source: ./sanity/lib/vote/getPostVotes.ts
 // Variable: getPostVotesQuery
 // Query: {        "upvotes": count(*[_type == "vote" && post._ref == $postId && voteType == "upvote"]),        "downvotes": count(*[_type == "vote" && post._ref == $postId && voteType == "downvote"]),                "netScore": count(*[_type == "vote" && post._ref == $postId && voteType == "upvote"]) - count(*[_type == "vote" && post._ref == $postId && voteType == "downvote"])         }
@@ -461,11 +575,14 @@ export type GetUserVotePostVoteStatusQueryResult = "downvote" | "upvote" | null;
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"post\" && isDeleted == false] {\n        _id,\n        title, \n        \"slug\": slug.current,\n        body,\n        publishedAt,\n        \"author\": author->,\n        \"subreddit\": subreddit->, \n        image,\n        isDeleted\n        } | order(publishedAt desc)": GetAllPostsQueryResult;
+    "\n        *[_type == \"comment\" && parentComment._ref == $commentId] {\n        ...,\n        _id,\n        content,\n        createdAt,\n        \"author\": author->,\n        \"replies\": *[_type == \"comment\" && parentComment._ref == ^._id],\n        \"votes\": {\n        \"upvotes\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"upvote\"]),\n        \"downvotes\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"downvote\"]),\n        \"netScore\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"upvote\"]) - count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"downvote\"]),\n        \"voteStatus\": *[_type == \"vote\" && comment._ref == ^._id && user._ref == $userId][0].voteType,\n        },\n        } | order(votes.netScore desc) \n         \n        ": GetCommentRepliesQueryResult;
     "\n            *[_type == \"subreddit\" && title == $name][0] {\n              _id\n            }\n           ": CheckExistingQueryResult;
     "\n                *[_type == \"subreddit\" && slug.current == $slug][0] {\n                  _id\n                }\n               ": CheckSlugQueryResult;
+    "\n        *[_type == \"subreddit\" && slug.current == $slug][0] {\n            ...,\n            \"slug\": slug.current,\n            \"moderator\": moderator->\n        }\n    ": QueryResult;
     "*[_type == \"subreddit\"] {\n        ...,\n        \"slug\": slug.current,\n        \"moderator\": moderator->,\n        } | order(_createdAt desc)": GetSubredditsQueryResult;
     "*[_type == \"user\" && _id == $id][0]": GetExistingUserQueryResult;
+    "\n        *[_type == \"vote\" && user._ref == $userId && (\n            ($contentType == \"post\" && post._ref == $contentId) ||\n            ($contentType == \"comment\" && comment._ref == $contentId)\n        )][0] {\n            _id,\n            voteType\n        }\n    ": ExistingVoteQueryResult;
+    "\n        *[_type == \"comment\" && post._ref == $postId && !defined(parentComment)] {\n            ...,\n            _id,\n            content,\n            createdAt,\n            \"author\": author->,\n            \"replies\": *[_type == \"comment\" && parentComment._ref == ^._id],\n            \"votes\": {\n            \"upvotes\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"upvote\"]),\n            \"downvotes\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"downvote\"]),\n            \"netScore\": count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"upvote\"]) - count(*[_type == \"vote\" && comment._ref == ^._id && voteType == \"downvote\"]),\n            \"voteStatus\": *[_type == \"vote\" && comment._ref == ^._id && user._ref == $userId][0].voteType,\n            },\n          } | order(votes.netScore desc, createdAt desc) \n        ": GetPostCommentsQueryResult;
     "\n        {\n        \"upvotes\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"upvote\"]),\n\n        \"downvotes\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"downvote\"]),\n        \n        \"netScore\": count(*[_type == \"vote\" && post._ref == $postId && voteType == \"upvote\"]) - count(*[_type == \"vote\" && post._ref == $postId && voteType == \"downvote\"]) \n        }\n        ": GetPostVotesQueryResult;
     "*[_type == \"vote\" && post._ref == $postId && user._ref == $userId][0].voteType": GetUserVotePostVoteStatusQueryResult;
   }

@@ -740,6 +740,34 @@
         },
         "optional": true
       },
+      "postKind": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "text"
+            },
+            {
+              "type": "string",
+              "value": "image"
+            },
+            {
+              "type": "string",
+              "value": "link"
+            }
+          ]
+        },
+        "optional": true
+      },
+      "linkUrl": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "body": {
         "type": "objectAttribute",
         "value": {
